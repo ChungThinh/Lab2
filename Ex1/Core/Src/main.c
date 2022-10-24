@@ -276,6 +276,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 int counter1 = 50;
+int counter2 = 100;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(counter1 > 0)
@@ -283,9 +284,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(counter1 <= 0)
 	{
 		counter1 = 50;
-		HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin, SET);
+		HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, SET);
 		switch(status)
 		 {
+		 case 0:
+			 HAL_GPIO_WritePin(GPIOA, EN3_Pin, RESET);
+			 display7SEG(status);
+			 status++;
+			 break;
 		 case 1:
 			 HAL_GPIO_WritePin(GPIOA, EN0_Pin, RESET);
 			 display7SEG(status);
@@ -294,7 +300,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		 case 2:
 			 HAL_GPIO_WritePin(GPIOA, EN1_Pin, RESET);
 			 display7SEG(status);
-			 status = 1;
+			 status = 3;
+			 break;
+		 case 3:
+			 HAL_GPIO_WritePin(GPIOA, EN2_Pin, RESET);
+			 display7SEG(status);
+			 status = 0;
 			 break;
 		 default:
 			 status = 1;
@@ -303,6 +314,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			 status++;
 			 break;
 		 }
+	}
+	if(counter2 >0)
+		counter2--;
+	if(counter2 <= 0)
+	{
+		counter2 = 100;
+		HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
 	}
 }
 /* USER CODE END 4 */
