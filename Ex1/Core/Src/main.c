@@ -56,7 +56,9 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int status = 1;
+const int MAX_LED = 4;
+int index_led = 0;
+int led_buffer[4]={1, 2, 3, 4};
 void display7SEG(int num)
 {
 	HAL_GPIO_WritePin ( GPIOB , g_Pin|f_Pin|e_Pin|d_Pin|c_Pin|b_Pin|a_Pin ,RESET );
@@ -93,7 +95,29 @@ void display7SEG(int num)
 		break;
 	}
 }
-
+void update7SEG(int index)
+{
+	HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, SET);
+	switch(index)
+	{
+	case 0:
+		HAL_GPIO_WritePin(GPIOA, EN0_Pin, RESET);
+		display7SEG(led_buffer[index]);
+		break;
+	case 1:
+		HAL_GPIO_WritePin(GPIOA, EN1_Pin, RESET);
+		display7SEG(led_buffer[index]);
+		break;
+	case 2:
+		HAL_GPIO_WritePin(GPIOA, EN2_Pin, RESET);
+		display7SEG(led_buffer[index]);
+		break;
+	case 3:
+		HAL_GPIO_WritePin(GPIOA, EN3_Pin, RESET);
+		display7SEG(led_buffer[index]);
+		break;
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -134,6 +158,7 @@ int main(void)
 
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -284,36 +309,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(counter1 <= 0)
 	{
 		counter1 = 50;
-		HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, SET);
-		switch(status)
-		 {
-		 case 0:
-			 HAL_GPIO_WritePin(GPIOA, EN3_Pin, RESET);
-			 display7SEG(status);
-			 status++;
-			 break;
-		 case 1:
-			 HAL_GPIO_WritePin(GPIOA, EN0_Pin, RESET);
-			 display7SEG(status);
-			 status++;
-			 break;
-		 case 2:
-			 HAL_GPIO_WritePin(GPIOA, EN1_Pin, RESET);
-			 display7SEG(status);
-			 status = 3;
-			 break;
-		 case 3:
-			 HAL_GPIO_WritePin(GPIOA, EN2_Pin, RESET);
-			 display7SEG(status);
-			 status = 0;
-			 break;
-		 default:
-			 status = 1;
-			 HAL_GPIO_WritePin(GPIOA, EN0_Pin, RESET);
-			 display7SEG(status);
-			 status++;
-			 break;
-		 }
+		if(index_led > 3)
+			index_led = 0;
+		update7SEG(index_led++);
 	}
 	if(counter2 >0)
 		counter2--;
