@@ -57,74 +57,60 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 const int MAX_LED = 4;
-int index_led = 0;
-int led_buffer[4]={1, 2, 3, 4};
-int hour = 15 , minute = 8 , second = 50;
-void display7SEG(int num)
+const int MAX_LED_MATRIX = 8;
+int index_led_matrix = 0;
+uint8_t matrix_buffer[8] = {0xFF,0x01,0x00,0xEC,0xEC,0x00,0x01,0xFF};
+void updateLEDmatrixRow(uint8_t data)
 {
-	HAL_GPIO_WritePin ( GPIOB , g_Pin|f_Pin|e_Pin|d_Pin|c_Pin|b_Pin|a_Pin ,RESET );
-	switch (num)
-	{
-	case 0:
-		HAL_GPIO_WritePin ( GPIOB , g_Pin ,SET );
-		break;
-	case 1:
-		HAL_GPIO_WritePin ( GPIOB , g_Pin|f_Pin|e_Pin|d_Pin|a_Pin ,SET );
-		break;
-	case 2:
-		HAL_GPIO_WritePin ( GPIOB , f_Pin|c_Pin ,SET );
-		break;
-	case 3:
-		HAL_GPIO_WritePin ( GPIOB , f_Pin|e_Pin ,SET );
-		break;
-	case 4:
-		HAL_GPIO_WritePin ( GPIOB , e_Pin|d_Pin|a_Pin ,SET );
-		break;
-	case 5:
-		HAL_GPIO_WritePin ( GPIOB , e_Pin|b_Pin ,SET );
-		break;
-	case 6:
-		HAL_GPIO_WritePin ( GPIOB , b_Pin ,SET );
-		break;
-	case 7:
-		HAL_GPIO_WritePin ( GPIOB , g_Pin|f_Pin|e_Pin|d_Pin ,SET );
-		break;
-	case 8:
-		break;
-	case 9:
-		HAL_GPIO_WritePin ( GPIOB , e_Pin ,SET );
-		break;
-	}
+	HAL_GPIO_WritePin(GPIOB, ROW0_Pin, (data>>0)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW1_Pin, (data>>1)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW2_Pin, (data>>2)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW3_Pin, (data>>3)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW4_Pin, (data>>4)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW5_Pin, (data>>5)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW6_Pin, (data>>6)&0x01);
+	HAL_GPIO_WritePin(GPIOB, ROW7_Pin, (data>>7)&0x01);
 }
-void update7SEG(int index)
+void updateLEDMatrix(int index)
 {
-	HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, SET);
+	HAL_GPIO_WritePin(GPIOA, ENM0_Pin|ENM1_Pin|ENM2_Pin|ENM3_Pin|ENM4_Pin|ENM5_Pin|ENM6_Pin|ENM7_Pin, SET);
 	switch(index)
 	{
 	case 0:
-		HAL_GPIO_WritePin(GPIOA, EN0_Pin, RESET);
-		display7SEG(led_buffer[index]);
+		HAL_GPIO_WritePin(GPIOA, ENM0_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
 		break;
 	case 1:
-		HAL_GPIO_WritePin(GPIOA, EN1_Pin, RESET);
-		display7SEG(led_buffer[index]);
+		HAL_GPIO_WritePin(GPIOA, ENM1_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
 		break;
 	case 2:
-		HAL_GPIO_WritePin(GPIOA, EN2_Pin, RESET);
-		display7SEG(led_buffer[index]);
+		HAL_GPIO_WritePin(GPIOA, ENM2_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
 		break;
 	case 3:
-		HAL_GPIO_WritePin(GPIOA, EN3_Pin, RESET);
-		display7SEG(led_buffer[index]);
+		HAL_GPIO_WritePin(GPIOA, ENM3_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
+		break;
+	case 4:
+		HAL_GPIO_WritePin(GPIOA, ENM4_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
+		break;
+	case 5:
+		HAL_GPIO_WritePin(GPIOA, ENM5_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
+		break;
+	case 6:
+		HAL_GPIO_WritePin(GPIOA, ENM6_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
+		break;
+	case 7:
+		HAL_GPIO_WritePin(GPIOA, ENM7_Pin, RESET);
+		updateLEDmatrixRow(matrix_buffer[index]);
+		break;
+	default:
 		break;
 	}
-}
-void updateClockBuffer()
-{
-	led_buffer[0] = hour/10;
-	led_buffer[1] = hour%10;
-	led_buffer[2] = minute/10;
-	led_buffer[3] = minute%10;
 }
 /* USER CODE END 0 */
 
@@ -163,40 +149,17 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  setTimer1(1000);
-  setTimer2(250);
-  updateClockBuffer();
+  setTimer1(20);
   while (1)
   {
 	if(timer1_flag == 1)
 	{
-		if(index_led > 3)
-			index_led = 0;
-		second++;
-		if(second >= 60)
+		updateLEDMatrix(index_led_matrix++);
+		if(index_led_matrix == MAX_LED_MATRIX)
 		{
-			second = 0;
-			minute++;
+			index_led_matrix = 0;
 		}
-		if(minute >= 60)
-		{
-			minute = 0;
-			hour++;
-		}
-		if(hour >= 24)
-		{
-			hour = 0;
-		}
-		updateClockBuffer();
-		HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
-		setTimer1(1000);
-	}
-	if(timer2_flag == 1)
-	{
-		if(index_led > 3)
-		index_led = 0;
-		update7SEG(index_led++);
-		setTimer2(250);
+		setTimer1(20);
 	}
     /* USER CODE END WHILE */
 
