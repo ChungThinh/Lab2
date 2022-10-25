@@ -59,7 +59,8 @@ static void MX_TIM2_Init(void);
 const int MAX_LED = 4;
 const int MAX_LED_MATRIX = 8;
 int index_led_matrix = 0;
-uint8_t matrix_buffer[8] = {0xFF,0x01,0x00,0xEC,0xEC,0x00,0x01,0xFF};
+int shift_matrix = 0;
+uint8_t matrix_buffer[8] = {0xFF,0xF7,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 void updateLEDmatrixRow(uint8_t data)
 {
 	HAL_GPIO_WritePin(GPIOB, ROW0_Pin, (data>>0)&0x01);
@@ -112,6 +113,71 @@ void updateLEDMatrix(int index)
 		break;
 	}
 }
+void copymatrix(uint8_t tempmatrix[])
+{
+	matrix_buffer[0] = tempmatrix[0];
+	matrix_buffer[1] = tempmatrix[1];
+	matrix_buffer[2] = tempmatrix[2];
+	matrix_buffer[3] = tempmatrix[3];
+	matrix_buffer[4] = tempmatrix[4];
+	matrix_buffer[5] = tempmatrix[5];
+	matrix_buffer[6] = tempmatrix[6];
+	matrix_buffer[7] = tempmatrix[7];
+}
+
+void shiftmatrix(int index)
+{
+	if (index == 0)
+	{
+		uint8_t tempmatrix[8] = {0xFF,0xF7,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 1)
+	{
+		uint8_t tempmatrix[8] = {0xAA,0xDD,0xF7,0xFF,0xFF,0xFF,0xFF,0xFF};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 2)
+	{
+		uint8_t tempmatrix[8] = {0xB6,0xAA,0xDD,0xF7,0xFF,0xFF,0xFF,0xFF};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 3)
+	{
+		uint8_t tempmatrix[8] = {0xDD,0xBE,0xB6,0xAA,0xDD,0xF7,0xFF,0xFF};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 4)
+	{
+		uint8_t tempmatrix[8] = {0xE3,0xDD,0xBE,0xB6,0xAA,0xDD,0xF7,0xFF};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 5)
+	{
+		uint8_t tempmatrix[8] = {0xFF,0xE3,0xDD,0xBE,0xB6,0xAA,0xDD,0xF7};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 6)
+	{
+		uint8_t tempmatrix[8] = {0xFF,0xFF,0xE3,0xDD,0xBE,0xB6,0xAA,0xDD};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 7)
+	{
+		uint8_t tempmatrix[8] = {0xFF,0xFF,0xE3,0xDD,0xBE,0xB6,0xAA,0xDD};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 8)
+	{
+		uint8_t tempmatrix[8] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xE3,0xDD};
+		copymatrix(tempmatrix);
+	}
+	else if(index == 9)
+	{
+		uint8_t tempmatrix[8] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xE3};
+		copymatrix(tempmatrix);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -158,6 +224,11 @@ int main(void)
 		if(index_led_matrix == MAX_LED_MATRIX)
 		{
 			index_led_matrix = 0;
+			if(shift_matrix > 9)
+			{
+				shift_matrix = 0;
+			}
+			shiftmatrix(shift_matrix++);
 		}
 		setTimer1(20);
 	}
